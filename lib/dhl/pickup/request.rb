@@ -4,8 +4,8 @@ require 'erb'
 require 'set'
 
 class Dhl::Pickup::Request
-  attr_reader :site_id, :password, :duty, :requested_pickup_time, :place, :consignee, :shipper, :shippet_detail, :billing, :notification
-  attr_accessor :pieces, :language, :reference_id, :shipment_time, :shipment_reference, :request_archive_doc
+  attr_reader :site_id, :password, :pickup_action, :requestor, :place, :pickup, :pickup_contact
+  attr_accessor :language, :reference_id
 
   URLS = {
     :production => 'https://xmlpi-ea.dhl.com/XMLShippingServlet',
@@ -24,13 +24,7 @@ class Dhl::Pickup::Request
       end
     end
 
-    @requested_pickup_time = false
-    @duty = false
-    @place = false
-    @language = 'es'
-    @request_archive_doc = 'Y'
-
-    @pieces = []
+    pickup_action = 'request'
   end
 
   def test_mode?
@@ -45,151 +39,79 @@ class Dhl::Pickup::Request
     @test_mode = false
   end
 
-  def requested_pickup_time!
-    @requested_pickup_time = true
+  def pickup_action_request!
+    @pickup_action = 'request'
   end
   
-  def not_requested_pickup_time!
-    @requested_pickup_time = false
+  def pickup_action_cancel!
+    @pickup_action = 'cancel'
   end
 
-  def requested_pickup_time?
-    !!@requested_pickup_time
+  def pickup_action_request?
+  !!@pickup_action and @pickup_action=='request'
   end
 
+  def pickup_action_cancel?
+  !!@pickup_action and @pickup_action=='cancel'
+  end
+  
+  def set_requestor(requestor_params = {})
+    @requestor = {
+      :account_type => requestor_params[:account_type],
+      :account_number => requestor_params[:account_number],
+      :requestor_contact_person_name => requestor_params[:requestor_contact_person_name],
+      :requestor_contact_phone => requestor_params[:requestor_contact_phone],
+      :company_name => requestor_params[:company_name],
+      :country_code => requestor_params[:country_code],
+      :city => requestor_params[:city],
+      :address1 => requestor_params[:address1],
+      :address2 => requestor_params[:address2],
+      :address3 => requestor_params[:address3]
+    }
+  end
+  alias_method :set_requestor!, :set_requestor
+  
   def set_place(place_params = {})
-    @test_mode = !!place_params[:test_mode] || Dhl::Pickup.test_mode?
-
     @place = {
-      :resident_or_business => place_params[:resident_or_business].slice(0,1).upcase,
+      :location_type => place_params[:location_type],
       :company_name => place_params[:company_name],
-      :address_line1 => place_params[:address_line1],
-      :address_line2 => place_params[:address_line2], 
-      :address_line3 => place_params[:address_line3],
-      :postal_code => place_params[:postal_code],
-      :country_code => place_params[:country_code].slice(0,3).upcase,
-      :city => place_params[:city]
+      :package_location => place_params[:package_location],
+      :country_code => place_params[:country_code],
+      :city => place_params[:city],
+      :address1 => place_params[:address1],
+      :address2 => place_params[:address2],
+      :address3 => place_params[:address3],
+      :PostalCode => place_params[:PostalCode],
+      :Suburb => place_params[:Suburb],
     }
   end
+  alias_method :set_place!, :set_place
   
-  # def set_consignee(company_name, suit_department_name, address_line1, address_line2, address_line3, city, suburb, postal_code, division, country_code, country_name, person_name, phone_number, phone_extension, fax_number, email, mobile_phone_number)
-  def set_consignee(consignee_params = {})
-    validate_country_code!(consignee_params[:country_code])
-    @consignee = {
-      :company_name => consignee_params[:company_name],
-      :suit_department_name => consignee_params[:suit_department_name],
-      :address_line1 => consignee_params[:address_line1],
-      :address_line2 => consignee_params[:address_line2],
-      :address_line3 => consignee_params[:address_line3],
-      :city => consignee_params[:city],
-      :suburb => consignee_params[:suburb],
-      :postal_code => consignee_params[:postal_code],
-      :division => consignee_params[:division],
-      :country_code => consignee_params[:country_code],
-      :country_name => consignee_params[:country_name],
-      :person_name => consignee_params[:person_name],
-      :phone_number => consignee_params[:phone_number],
-      :phone_extension => consignee_params[:phone_extension],
-      :fax_number => consignee_params[:fax_number],
-      :email => consignee_params[:email],
-      :mobile_phone_number => consignee_params[:mobile_phone_number],
+  def set_pickup(pickup_params = {})
+    @pickup = {
+      :pickup_date => pickup_params[:pickup_date],
+      :pickup_type_code => pickup_params[:pickup_type_code],
+      :ready_by_time => pickup_params[:ready_by_time],
+      :close_time => pickup_params[:close_time],
+      :after_hours_closing_time => pickup_params[:after_hours_closing_time],
+      :after_hours_location => pickup_params[:after_hours_location],
+      :remote_pickup_flag => pickup_params[:remote_pickup_flag],
+      :special_instructions => pickup_params[:special_instructions],
+      :remarks => pickup_params[:remarks],
+      :pieces => pickup_params[:pieces],
+      :weight => pickup_params[:weight],
+      :weight_unit => pickup_params[:weight_unit],
     }
   end
-  alias_method :set_consignee!, :set_consignee
+  alias_method :set_pickup!, :set_pickup
 
-  
-  # def set_shipper(shipper_id, shipper_account, company_name, suit_department_name, address_line1, address_line2, address_line3, city, suburb, postal_code, division, country_code, country_name, person_name, phone_number, phone_extension, fax_number, email, mobile_phone_number)
-  def set_shipper(shipper_params = {})
-    validate_country_code!(shipper_params[:country_code])
-    @shipper = {
-      :shipper_id => shipper_params[:shipper_id],
-      :shipper_account => shipper_params[:shipper_account],
-      :company_name => shipper_params[:company_name],
-      :suit_department_name => shipper_params[:suit_department_name],
-      :address_line1 => shipper_params[:address_line1],
-      :address_line2 => shipper_params[:address_line2],
-      :address_line3 => shipper_params[:address_line3],
-      :city => shipper_params[:city],
-      :suburb => shipper_params[:suburb],
-      :postal_code => shipper_params[:postal_code],
-      :division => shipper_params[:division],
-      :country_code => shipper_params[:country_code],
-      :country_name => shipper_params[:country_name],
-      :person_name => shipper_params[:person_name],
-      :phone_number => shipper_params[:phone_number],
-      :phone_extension => shipper_params[:phone_extension],
-      :fax_number => shipper_params[:fax_number],
-      :email => shipper_params[:email],
-      :mobile_phone_number => shipper_params[:mobile_phone_number],
+  def set_pickup_contact(pickup_contact_params = {})
+    @pickup_contact = {
+      :person_name => pickup_contact_params[:person_name],
+      :phone => pickup_contact_params[:pickup_contact_type_code],
     }
   end
-  alias_method :set_shipper!, :set_shipper
-
-
-  # def set_shipment_details(weight, weight_unit, global_product_code, date, content, dimension_unit, package_type, is_dutiable, currency_code, cust_data)
-  def set_shipment_details(shipment_detail_params = {})
-    @shipment_detail = {
-      :weight => shipment_detail_params[:weight],
-      :weight_unit => shipment_detail_params[:weight_unit],
-      :global_product_code => shipment_detail_params[:global_product_code],
-      :date => shipment_detail_params[:date],
-      :content => shipment_detail_params[:content],
-      :dimension_unit => shipment_detail_params[:dimension_unit],
-      :package_type => shipment_detail_params[:package_type],
-      :is_dutiable => shipment_detail_params[:is_dutiable],
-      :currency_code => shipment_detail_params[:currency_code].slice(0,3).upcase,
-      :cust_data => shipment_detail_params[:cust_data]
-    }
-  end
-  alias_method :set_shipment_details!, :set_shipment_details
-
-
-  def set_billing(billing_params = {})
-    @billing = {
-      :shipper_account_number => billing_params[:shipper_account_number],
-      :shipping_payment_type => billing_params[:shipping_payment_type],
-      :billing_account_number => billing_params[:billing_account_number],
-      :duty_payment_type => billing_params[:duty_payment_type],
-      :duty_account_number => billing_params[:duty_account_number]
-    }
-  end
-  alias_method :set_billing!, :set_billing
-
-
-  def shipment_details?
-    !!@shipment_detail
-  end
-
-  def dutiable?
-    !!@duty
-  end
-
-  # def dutiable(value, currency_code="USD", terms_of_trade)
-  def dutiable(dutiable_params = {})
-    @duty = {
-      :declared_value => dutiable_params[:value].to_f,
-      :declared_currency => dutiable_params[:currency_code].slice(0,3).upcase,
-      :terms_of_trade=> dutiable_params[:terms_of_trade]
-    }
-  end
-  alias_method :dutiable!, :dutiable
-
-  def not_dutiable!
-    @duty = false
-  end
-
-  def notificable?
-    !!@notification
-  end
-
-  # def dutiable(value, currency_code="USD", terms_of_trade)
-  def notificable(notificable_params = {})
-    @notification = {
-      :emails => notificable_params[:emails].join(';'),
-      :message => notificable_params[:message]
-    }
-  end
-  alias_method :notificable!, :notificable
+  alias_method :set_pickup_contact!, :set_pickup_contact
 
   def dimensions_unit
     @dimensions_unit ||= Dhl::Pickup.dimensions_unit
@@ -262,25 +184,6 @@ class Dhl::Pickup::Request
     @to_xml = ERB.new(File.new(xml_template_path).read, nil,'%<>-').result(binding)
   end
 
-  # # ready times are only 8a-5p(17h)
-  # def ready_time(time=Time.now)
-  #   if time.hour >= 17 || time.hour < 8
-  #     time.strftime("PT08H00M")
-  #   else
-  #     time.strftime("PT%HH%MM")
-  #   end
-  # end
-
-  # # ready dates are only mon-fri
-  # def ready_date(t=Time.now)
-  #   date = Date.parse(t.to_s)
-  #   if (date.cwday >= 6) || (date.cwday >= 5 && t.hour >= 17)
-  #     date.send(:next_day, 8-date.cwday)
-  #   else
-  #     date
-  #   end.strftime("%Y-%m-%d")
-  # end
-
   def post
     response = HTTParty.post(servlet_url,
       :body => to_xml,
@@ -322,21 +225,6 @@ protected
     raise Dhl::Pickup::FromNotSetError, "#from() is not set" unless !(@consignee and @shipment_details)
     raise Dhl::Pickup::ToNotSetError, "#to() is not set" unless !(@shipper and @shipment_details)
     # validate_pieces!
-  end
-
-  def validate_pieces!
-    pieces.each do |piece|
-      klass_name = "Dhl::Pickup::Piece"
-      if piece.class.to_s != klass_name
-        raise Dhl::Pickup::PieceError, "entry in #pieces is not a #{klass_name} object!"
-      end
-    end
-  end
-
-  def validate_country_code!(country_code)
-    unless country_code =~ /^[A-Z]{2}$/
-      raise Dhl::Pickup::CountryCodeError, 'country code must be upper-case, two letters (A-Z)'
-    end
   end
 
   def xml_template_path
