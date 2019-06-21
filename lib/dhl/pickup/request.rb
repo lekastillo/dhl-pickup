@@ -4,8 +4,8 @@ require 'erb'
 require 'set'
 
 class Dhl::Pickup::Request
-  attr_reader :site_id, :password, :pickup_action, :requestor, :place, :pickup, :pickup_contact
-  attr_accessor :language, :reference_id
+  attr_reader :site_id, :password, :region, :pickup_action, :requestor, :place, :pickup, :pickup_contact, :shipment_details
+  attr_accessor :language, :reference_id, :confirmation_number, :requestor_name, :country_code, :reason, :pickup_date, :cancel_time
 
   URLS = {
     :production => 'https://xmlpi-ea.dhl.com/XMLShippingServlet',
@@ -24,7 +24,12 @@ class Dhl::Pickup::Request
       end
     end
 
-    pickup_action = 'request'
+    @pickup_action = 'request'
+    @region = 'AM'
+  end
+
+  def set_region(region)
+    @region = region
   end
 
   def test_mode?
@@ -81,8 +86,8 @@ class Dhl::Pickup::Request
       :address1 => place_params[:address1],
       :address2 => place_params[:address2],
       :address3 => place_params[:address3],
-      :PostalCode => place_params[:PostalCode],
-      :Suburb => place_params[:Suburb],
+      :postal_code => place_params[:postal_code],
+      :suburb => place_params[:suburb],
     }
   end
   alias_method :set_place!, :set_place
@@ -95,20 +100,38 @@ class Dhl::Pickup::Request
       :close_time => pickup_params[:close_time],
       :after_hours_closing_time => pickup_params[:after_hours_closing_time],
       :after_hours_location => pickup_params[:after_hours_location],
-      :remote_pickup_flag => pickup_params[:remote_pickup_flag],
-      :special_instructions => pickup_params[:special_instructions],
-      :remarks => pickup_params[:remarks],
       :pieces => pickup_params[:pieces],
+      :remote_pickup_flag => pickup_params[:remote_pickup_flag],
       :weight => pickup_params[:weight],
       :weight_unit => pickup_params[:weight_unit],
+      :special_instructions => pickup_params[:special_instructions],
+      :remarks => pickup_params[:remarks]
     }
   end
   alias_method :set_pickup!, :set_pickup
 
+  def set_shipment_details(shipment_details_params = {})
+    @shipment_details = {
+      :account_type => shipment_details_params[:account_type],
+      :account_number => shipment_details_params[:account_number],
+      :bill_to_account_number => shipment_details_params[:bill_to_account_number],
+      :awb_number => shipment_details_params[:awb_number],
+      :numberof_pieces => shipment_details_params[:numberof_pieces],
+      :weight => shipment_details_params[:weight],
+      :weight_unit => shipment_details_params[:weight_unit],
+      :global_product_code => shipment_details_params[:global_product_code],
+      :local_product_code => shipment_details_params[:local_product_code],
+      :door_to => shipment_details_params[:door_to],
+      :special_instructions => shipment_details_params[:special_instructions],
+      :remarks => shipment_details_params[:remarks]
+    }
+  end
+  alias_method :set_shipment_details!, :set_shipment_details
+
   def set_pickup_contact(pickup_contact_params = {})
     @pickup_contact = {
-      :person_name => pickup_contact_params[:person_name],
-      :phone => pickup_contact_params[:pickup_contact_type_code],
+      :pickup_contact_person_name => pickup_contact_params[:pickup_contact_person_name],
+      :pickup_contact_phone => pickup_contact_params[:pickup_contact_phone],
     }
   end
   alias_method :set_pickup_contact!, :set_pickup_contact

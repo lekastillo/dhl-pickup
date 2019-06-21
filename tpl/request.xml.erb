@@ -12,72 +12,101 @@
 			<SoftwareVersion>0.5</SoftwareVersion>
 		</MetaData>
 	</Request>
-	<RegionCode>AM</RegionCode>
+	<RegionCode><%= @region %></RegionCode>
 	<%- if pickup_action_request? %>
 		
 		<Requestor>
 			<AccountType>D</AccountType>
-			<AccountNumber>654031018</AccountNumber>
+			<AccountNumber><%= @requestor[:account_number] %></AccountNumber>
 			<RequestorContact>
-				<PersonName>Rikhil</PersonName>
-				<Phone>23162</Phone>
+				<PersonName><%= @requestor[:requestor_contact_person_name] %></PersonName>
+				<Phone><%= @requestor[:requestor_contact_phone] %></Phone>
 			</RequestorContact>
+			<%- if !@requestor[:company_name].nil? %>
+				<CompanyName><%= @requestor[:company_name] %></CompanyName>
+			<%- end %>
+			<CountryCode><%= @requestor[:country_code] %></CountryCode>
+			<City><%= @requestor[:city] %></City>
+			<Address1><%= @consignee[:address1] %></Address1>
+			<%- if !@consignee[:address2].nil? %>
+				<Address2><%= @consignee[:address2] %></Address2>
+			<% end %>
+			<%- if !@consignee[:address3].nil? %>
+				<Address3><%= @consignee[:address3] %></Address3>
+			<% end %>
+		
 		</Requestor>
 
 		<Place>
-			<LocationType>B</LocationType>
-			<CompanyName>String</CompanyName>
-			<Address1>String</Address1>
-			<Address2>norfolk+st</Address2>
-			<PackageLocation>String</PackageLocation>
-			<City>String</City>
-			<StateCode>CA</StateCode>
-			<DivisionName>sd</DivisionName>
-			<CountryCode>BR</CountryCode>
-			<PostalCode>66810</PostalCode>
+			<LocationType><%= @place[:location_type] %></LocationType>
+			<CompanyName><%= @place[:company_name] %></CompanyName>
+			<Address1><%= @place[:address1] %></Address1>
+			<%- if !@place[:address2].nil? %>
+				<Address2><%= @place[:address2] %></Address2>
+			<% end %>
+			<%- if !@place[:address3].nil? %>
+				<Address3><%= @place[:address3] %></Address3>
+			<% end %>
+			<PackageLocation><%= @place[:package_location] %></PackageLocation>
+			<CountryCode><%= @place[:country_code] %></CountryCode>
+			<City><%= @place[:city] %></City>
+			<PostalCode><%= @place[:postal_code] %></PostalCode>
 		</Place>
 		
 		<Pickup>
-			<PickupDate>2016-10-19</PickupDate>
-			<ReadyByTime>10:20</ReadyByTime>
-			<CloseTime>09:20</CloseTime>
-			<AfterHoursClosingTime>11:20</AfterHoursClosingTime>
-			<AfterHoursLocation>String</AfterHoursLocation>
-			<Pieces>2</Pieces>
-			<weight>
-				<Weight>20</Weight>
-				<WeightUnit>L</WeightUnit>
-			</weight>
+			<PickupDate><%= @pickup[:pickup_date] %></PickupDate>
+			<PickupTypeCode><%= @pickup[:pickup_type_code] %></PickupTypeCode>
+			<ReadyByTime><%= @pickup[:ready_by_time] %></ReadyByTime>
+			<CloseTime><%= @pickup[:close_time] %></CloseTime>
+			<%- if !@pickup[:after_hours_closing_time].nil? %>
+				<AfterHoursClosingTime><%= @pickup[:after_hours_closing_time] %></AfterHoursClosingTime>
+			<% end %>
+			<%- if !@pickup[:after_hours_location].nil? %>
+				<AfterHoursLocation><%= @pickup[:after_hours_location] %></AfterHoursLocation>
+			<% end %>
+			<%- if !@pickup[:pieces].nil? %>
+				<Pieces><%= @pickup[:pieces] %></Pieces>
+			<% end %>
+			<%- if !@pickup[:remote_pickup_flag].nil?%>
+				<RemotePickupFlag><%= @pickup[:remote_pickup_flag] %></RemotePickupFlag>
+			<% end %>
+			<%- if !@pickup[:weight].nil? and !@pickup[:weight_unit].nil? %>
+				<weight>
+					<Weight><%= @pickup[:weight] %></Weight>
+					<WeightUnit><%= @pickup[:weight_unit] %></WeightUnit>
+				</weight>
+			<% end %>
+			<%- if !@pickup[:remote_pickup_flag].nil?%>
+				<RemotePickupFlag><%= @pickup[:remote_pickup_flag] %></RemotePickupFlag>
+			<% end %>
+			<%- if !@pickup[:special_instructions].nil?%>
+				<SpecialInstructions><%= @pickup[:special_instructions] %></SpecialInstructions>
+			<% end %>
+			<%- if !@pickup[:remarks].nil?%>
+				<Remarks><%= @pickup[:remarks] %></Remarks>
+			<% end %>
 		</Pickup>
 
 		<PickupContact>
-			<PersonName>Subhayu</PersonName>
-			<Phone>4801313131</Phone>
+			<PersonName><%= @pickup_contact[:pickup_contact_person_name] %></PersonName>
+			<Phone><%= @pickup_contact[:pickup_contact_phone] %></Phone>
 		</PickupContact>
 
 		<ShipmentDetails>
-			<AccountType>D</AccountType>
-			<AccountNumber>851624480</AccountNumber>
-			<BillToAccountNumber>100000000</BillToAccountNumber>
-			<AWBNumber>7520067111</AWBNumber>
-			<NumberOfPieces>1</NumberOfPieces>
-			<Weight>10</Weight>
-			<WeightUnit>L</WeightUnit>
-			<GlobalProductCode>D</GlobalProductCode>
-			<DoorTo>DD</DoorTo>
-			<DimensionUnit>I</DimensionUnit>
-			<InsuredAmount>999999.99</InsuredAmount>
-			<InsuredCurrencyCode>USD</InsuredCurrencyCode>
-			<Pieces>
-				<Weight>10</Weight>
-				<Width>2</Width>
-				<Height>2</Height>
-				<Depth>2</Depth>
-			</Pieces>
-			<SpecialService>S</SpecialService>
+			<AWBNumber>><%= @shipment_details[:awb_number] %></AWBNumber>
+			<NumberOfPieces>><%= @shipment_details[:numberof_pieces] %></NumberOfPieces>
+			<Weight>><%= @shipment_details[:weight] %></Weight>
+			<WeightUnit>><%= @shipment_details[:weight_unit] %></WeightUnit>
+			<DoorTo>><%= @shipment_details[:door_to] %></DoorTo>
 		</ShipmentDetails>
+
 	<%- else %>
-		
+		<ConfirmationNumber><%= @confirmation_number %></ConfirmationNumber>
+		<RequestorName><%= @requestor_name %></RequestorName>
+		<CountryCode><%= @country_code %></CountryCode>
+		<Reason><%= @reason %></Reason>
+		<PickupDate><%= @pickup_date %></PickupDate>
+		<CancelTime><%= @cancel_time %></CancelTime>
 	<%- end %>
 
 </req:ShipmentRequest>
