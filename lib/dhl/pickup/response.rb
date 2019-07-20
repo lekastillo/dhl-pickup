@@ -27,11 +27,8 @@ class Dhl::Pickup::Response
       else
         Dhl::Pickup::Upstream::UnknownError.new(response_error_condition_data)
       end
-    # elsif condition_indicates_error?
-    #   @errors = create_condition_errors
     else
-    #   load_costs(DEFAULT_CURRENCY_ROLE_TYPE_CODE)
-    puts 'all is good'
+      puts 'all is good'
     end
   end
 
@@ -39,78 +36,6 @@ class Dhl::Pickup::Response
     !@errors.empty?
   end
 
-  def load_costs(currency_role_type_code=DEFAULT_CURRENCY_ROLE_TYPE_CODE)
-    validate_currency_role_type_code!(currency_role_type_code)
-
-    return if error?
-
-    qtd_shp = [ @parsed_xml["DCTResponse"]["GetQuoteResponse"]["BkgDetails"]["QtdShp"] ].flatten
-
-    trans_ind = qtd_shp.detect{|q| q["TransInd"] == "Y"}
-
-    qtd_s_in_ad_cur = [trans_ind].flatten.detect{|q| q.has_key?("QtdSInAdCur") and q["TransInd"] == "Y"}
-
-    if qtd_s_in_ad_cur.blank?
-      raise ResponseHasNoPriceError
-    end
-
-    qtd_s_in_ad_cur = qtd_s_in_ad_cur["QtdSInAdCur"]
-    pricing = []
-
-    if trans_ind
-      pricing = qtd_s_in_ad_cur.detect{|q|q["CurrencyRoleTypeCode"]==currency_role_type_code}
-    else
-      pricing = qtd_s_in_ad_cur.first
-    end
-
-    pricing.each do |k,v|
-      instance_variable_set("@#{underscore(k)}".to_sym, v)
-    end
-  end
-
-  def validate_currency_role_type_code!(currency_role_type_code)
-    unless CURRENCY_ROLE_TYPE_CODES.include?(currency_role_type_code)
-      raise Dhl::Pickup::OptionsError,
-        "'#{currency_role_type_code}' is not one of #{CURRENCY_ROLE_TYPE_CODES.join(', ')}"
-    end
-  end
-
-  def offered_services
-    market_services.select do
-      |m| m['TransInd'].to_s == "Y" || m['MrkSrvInd'].to_s == "Y"
-    end.map do |m|
-      Dhl::Pickup::MarketService.new(m)
-    end.sort{|a,b| a.code <=> b.code }
-  end
-
-  def offered_shipping_services
-    shipping_services.select do
-      |m| m['TransInd'].to_s == "Y"
-    end.map do |m|
-      Dhl::Pickup::ShippingService.new(m)
-    end.sort{|a,b| a.code <=> b.code }
-  end
-  
-
-  def all_services
-    market_services.map do |m|
-      Dhl::Pickup::MarketService.new(m)
-    end.sort{|a,b| a.code <=> b.code }
-  end
-
-  def total_discount
-    return if error?
-
-    qtd_shp = [ @parsed_xml["DCTResponse"]["GetQuoteResponse"]["BkgDetails"]["QtdShp"] ].flatten
-
-    trans_ind = qtd_shp.detect{|q| q["TransInd"] == "Y"}
-    
-    if trans_ind
-      discount=trans_ind['TotalDiscount'].first
-    else
-      pricing = 0.0
-    end
-  end
 
 protected
 
@@ -164,35 +89,6 @@ protected
   #def condition_error_message
     #@parsed_xml["DCTResponse"]["GetQuoteResponse"]["Note"]["Condition"]["ConditionData"].strip
   #end
-
-  def market_services
-    @market_services ||= begin
-      srv = @parsed_xml["DCTResponse"]["GetQuoteResponse"]["Srvs"]["Srv"]
-      a = []
-      if srv.is_a? Array
-        srv.each{|aa| a << aa["MrkSrv"]}
-      else
-        a << srv["MrkSrv"]
-      end
-      a.flatten
-    end
-      # @parsed_xml["DCTResponse"]["GetQuoteResponse"]["Srvs"]["Srv"]["MrkSrv"]
-  end
-
-  
-  def shipping_services
-    @shipping_services ||= begin
-      srv = @parsed_xml["DCTResponse"]["GetQuoteResponse"]["BkgDetails"]
-      a = []
-      if srv.is_a? Array
-        srv.each{|aa| a << aa["QtdShp"]}
-      else
-        a << srv["QtdShp"]
-      end
-      a.flatten
-    end
-      # @parsed_xml["DCTResponse"]["GetQuoteResponse"]["Srvs"]["Srv"]["MrkSrv"]
-  end
 
 
 end

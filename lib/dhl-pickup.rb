@@ -5,10 +5,6 @@ require "dhl/pickup/helper"
 require "dhl/pickup/errors"
 require "dhl/pickup/request"
 require "dhl/pickup/response"
-require "dhl/pickup/piece"
-# require "dhl/pickup/market_service"
-# require "dhl/pickup/shipping_service"
-
 class Dhl
   class Pickup
 
