@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<req:ShipmentRequest xmlns:req="http://www.dhl.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" schemaVersion="6.2" xsi:schemaLocation="http://www.dhl.com ship-val-global-req.xsd">
+<%- if pickup_action_request? %>
+<req:BookPURequest xmlns:req="http://www.dhl.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.dhl.com pickup-global-req.xsd" schemaVersion="3.0">
+<%- elsif pickup_action_cancel? %>
+<req:CancelPURequest xmlns:req="http://www.dhl.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.dhl.com cancel-pickup-global-req.xsd" schemaVersion="3.0">
+<%- end %>
+
 	<Request>
 		<ServiceHeader>
 			<MessageTime><%= @shipment_time %></MessageTime>
@@ -91,7 +97,7 @@
 			<PersonName><%= @pickup_contact[:pickup_contact_person_name] %></PersonName>
 			<Phone><%= @pickup_contact[:pickup_contact_phone] %></Phone>
 		</PickupContact>
-
+	<%- if pickup_shipment_details? %>
 		<ShipmentDetails>
 			<AWBNumber>><%= @shipment_details[:awb_number] %></AWBNumber>
 			<NumberOfPieces>><%= @shipment_details[:numberof_pieces] %></NumberOfPieces>
@@ -99,6 +105,7 @@
 			<WeightUnit>><%= @shipment_details[:weight_unit] %></WeightUnit>
 			<DoorTo>><%= @shipment_details[:door_to] %></DoorTo>
 		</ShipmentDetails>
+	<%- end %>
 
 	<%- else %>
 		<ConfirmationNumber><%= @confirmation_number %></ConfirmationNumber>
@@ -108,5 +115,8 @@
 		<PickupDate><%= @pickup_date %></PickupDate>
 		<CancelTime><%= @cancel_time %></CancelTime>
 	<%- end %>
-
-</req:ShipmentRequest>
+<%- if pickup_action_request? %>
+</req:BookPURequest>
+<%- elsif pickup_action_cancel? %>
+</req:CancelPURequest>
+<%- end %>

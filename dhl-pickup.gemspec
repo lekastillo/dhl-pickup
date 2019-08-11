@@ -6,9 +6,9 @@ require 'dhl/pickup/version'
 Gem::Specification.new do |gem|
   gem.name          = "dhl-pickup"
   gem.version       = Dhl::Pickup::VERSION
-  gem.authors       = ["Deseret Book", "Matthew Nielsen", "Luis Castillo"]
-  gem.email         = ["mnielsen@deseretbook.com"]
-  gem.description   = %q{Request pickup for orders to DHL}
+  gem.authors       = ["Luis Castillo"]
+  gem.email         = ["castillovaliente@gmail.com"]
+  gem.description   = %q{Request pickup to DHL}
   gem.summary       = %q{Gem to interface with DHL's XML-PI pickup service.}
   gem.homepage      = "https://github.com/lekastillo/dhl-pickup"
 

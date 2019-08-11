@@ -60,6 +60,10 @@ class Dhl::Pickup::Request
   !!@pickup_action and @pickup_action=='cancel'
   end
   
+  def pickup_shipment_details?
+    !!@shipment_details
+  end
+
   def set_requestor(requestor_params = {})
     @requestor = {
       :account_type => requestor_params[:account_type],
