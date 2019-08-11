@@ -250,7 +250,7 @@ protected
   end
 
   def xml_template_path
-    spec = Gem::Specification.find_by_name("dhl-shipment")
+    spec = Gem::Specification.find_by_name("dhl-pickup")
     gem_root = spec.gem_dir
     gem_root + "/tpl/request.xml.erb"
   end
