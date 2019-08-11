@@ -56,9 +56,14 @@ xsi:schemaLocation="http://www.dhl.com cancel-pickup-global-req.xsd" schemaVersi
 			<PackageLocation><%= @place[:package_location] %></PackageLocation>
 			<CountryCode><%= @place[:country_code] %></CountryCode>
 			<City><%= @place[:city] %></City>
-			<PostalCode><%= @place[:postal_code] %></PostalCode>
+			<%- if !@place[:postal_code].nil? %>
+				<PostalCode><%= @place[:postal_code] %></PostalCode>
+			<%- end %>		
+			<%- if !@place[:suburb].nil? %>
+				<Suburb><%= @place[:suburb] %></Suburb>
+			<%- end %>
 		</Place>
-		
+
 		<Pickup>
 			<PickupDate><%= @pickup[:pickup_date] %></PickupDate>
 			<PickupTypeCode><%= @pickup[:pickup_type_code] %></PickupTypeCode>
@@ -97,6 +102,7 @@ xsi:schemaLocation="http://www.dhl.com cancel-pickup-global-req.xsd" schemaVersi
 			<PersonName><%= @pickup_contact[:pickup_contact_person_name] %></PersonName>
 			<Phone><%= @pickup_contact[:pickup_contact_phone] %></Phone>
 		</PickupContact>
+
 	<%- if pickup_shipment_details? %>
 		<ShipmentDetails>
 			<AWBNumber>><%= @shipment_details[:awb_number] %></AWBNumber>
