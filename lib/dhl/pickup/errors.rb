@@ -3,11 +3,7 @@ class Dhl::Pickup
     def log_level; :verbose; end # by default we won't log these
   end
   class OptionsError < InputError; end
-  class FromNotSetError < InputError; end
-  class ToNotSetError < InputError; end
   class CountryCodeError < InputError; end
-
-  class ResponseHasNoPriceError < StandardError; end
 
   class Upstream < StandardError
     def log_level; :critical; end # by default we will log these

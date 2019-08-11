@@ -27,12 +27,12 @@
 			<%- end %>
 			<CountryCode><%= @requestor[:country_code] %></CountryCode>
 			<City><%= @requestor[:city] %></City>
-			<Address1><%= @consignee[:address1] %></Address1>
-			<%- if !@consignee[:address2].nil? %>
-				<Address2><%= @consignee[:address2] %></Address2>
+			<Address1><%= @requestor[:address1] %></Address1>
+			<%- if !@requestor[:address2].nil? %>
+				<Address2><%= @requestor[:address2] %></Address2>
 			<% end %>
-			<%- if !@consignee[:address3].nil? %>
-				<Address3><%= @consignee[:address3] %></Address3>
+			<%- if !@requestor[:address3].nil? %>
+				<Address3><%= @requestor[:address3] %></Address3>
 			<% end %>
 		
 		</Requestor>
